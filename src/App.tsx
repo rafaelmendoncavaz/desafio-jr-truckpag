@@ -10,7 +10,7 @@ function App() {
   }, [filmList, getFilms]);
 
   return (
-    <div className="max-w-6xl mx-auto my-2 flex flex-col gap-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 my-4 sm:my-6 md:my-8 flex flex-col items-center gap-6">
       <Header />
       <FilmList />
     </div>

@@ -1,4 +1,12 @@
-import { Eye, EyeOff, NotebookPen, Star } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  NotebookPen,
+  NotepadText,
+  Save,
+  Star,
+  X,
+} from "lucide-react";
 import type { GhibliAPIFilms } from "../../../api/types/types";
 import { useState } from "react";
 
@@ -9,6 +17,9 @@ interface FilmCardProps {
 export function FilmCard({ film }: FilmCardProps) {
   const [isWatched, setIsWatched] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [isNote, setIsNote] = useState<boolean>(false);
+  const [isEditNoteOpen, setIsEditNoteOpen] = useState<boolean>(false);
+  const [filmNote, setFilmNote] = useState<string>("");
 
   const toggleWatched = () => {
     setIsWatched((prev) => !prev);
@@ -18,28 +29,58 @@ export function FilmCard({ film }: FilmCardProps) {
     setIsFavorite((prev) => !prev);
   };
 
+  const toggleEditNote = () => {
+    setIsEditNoteOpen((prev) => !prev);
+  };
+
+  const saveNote = () => {
+    setIsNote((prev) => !prev);
+    setIsEditNoteOpen((prev) => !prev);
+  };
+
+  const deleteNote = () => {
+    setFilmNote("");
+    setIsNote((prev) => !prev);
+    setIsEditNoteOpen((prev) => !prev);
+  };
+
   return (
-    <li className="flex flex-col justify-center gap-2 rounded-md bg-zinc-200 text-zinc-900 transform transition-transform duration-200 hover:scale-[1.02]">
+    <li className="flex flex-col gap-2 rounded-md bg-zinc-200 text-zinc-900 transform transition-transform duration-200 hover:scale-[1.02] w-full max-w-sm sm:max-w-sm md:max-w-sm lg:max-w-md">
       <div className="relative">
-        <img src={film.image} alt={`poster of ${film.title}`} />
-        {isWatched || isFavorite ? (
+        <img
+          src={film.image}
+          alt={`poster of ${film.title}`}
+          className="w-full h-auto object-cover"
+        />
+        {(isWatched || isFavorite || isNote) && (
           <div className="absolute top-1 left-1 flex items-center gap-1">
             {isWatched && (
-              <div className=" bg-lime-700 p-1 rounded-md">
+              <div className="bg-lime-700 p-1 rounded-md" title="Watched">
                 <Eye size={16} color="white" />
               </div>
             )}
             {isFavorite && (
-              <div className=" bg-yellow-500 p-1 rounded-md">
+              <div className="bg-yellow-500 p-1 rounded-md" title="Favorited">
                 <Star size={16} color="black" />
               </div>
             )}
+            {isNote && (
+              <div
+                className="bg-blue-600 p-1 rounded-md"
+                title={`Your Note: ${filmNote}`}
+              >
+                <NotepadText size={16} color="white" />
+              </div>
+            )}
           </div>
-        ) : null}
+        )}
       </div>
+
       <div className="flex flex-col p-2">
         <h1 className="text-lg font-semibold">{film.title}</h1>
-        <span className="text-xs text-zinc-700">{`${film.release_date} - ${film.running_time} min`}</span>
+        <span className="text-xs text-zinc-700">
+          {`${film.release_date} - ${film.running_time} min`}
+        </span>
         <span className="font-semibold text-sm">
           Directed by:{" "}
           <span className="italic font-normal">{film.director}</span>
@@ -79,42 +120,77 @@ export function FilmCard({ film }: FilmCardProps) {
         <div className="w-full h-px bg-zinc-900/40" />
 
         <div className="flex flex-col gap-2">
-          <span
-            className="italic text-justify line-clamp-3"
-            title={film.description}
-          >
-            {film.description}
-          </span>
+          {isEditNoteOpen ? (
+            <textarea
+              className="border border-zinc-900/40 rounded-md p-1 outline-none"
+              rows={4}
+              placeholder="Write a comment about this film"
+              value={filmNote}
+              onChange={(e) => setFilmNote(e.target.value)}
+            />
+          ) : (
+            <>
+              <span
+                className="italic text-justify line-clamp-3"
+                title={film.description}
+              >
+                {film.description}
+              </span>
 
-          <div className="flex items-center justify-center gap-2 font-semibold">
+              <div className="flex flex-col lg:flex-row items-center justify-center gap-2 font-semibold">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-center gap-2 bg-lime-700 text-zinc-100 rounded-md p-1 cursor-pointer"
+                  onClick={toggleWatched}
+                >
+                  {isWatched ? <EyeOff size={20} /> : <Eye size={20} />}
+                  Watched
+                </button>
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-zinc-100 rounded-md p-1 cursor-pointer"
+                  onClick={toggleFavorited}
+                >
+                  <Star
+                    size={20}
+                    color="yellow"
+                    fill={isFavorite ? "yellow" : "transparent"}
+                  />
+                  Favorite
+                </button>
+              </div>
+            </>
+          )}
+
+          {isEditNoteOpen ? (
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-2 font-semibold">
+              <button
+                type="button"
+                className="w-full flex items-center justify-center gap-2 bg-red-700 text-zinc-100 rounded-md p-1 cursor-pointer"
+                onClick={isNote ? deleteNote : toggleEditNote}
+              >
+                <X size={20} />
+                {isNote ? "Deletar" : "Cancelar"}
+              </button>
+              <button
+                type="button"
+                className="w-full flex items-center justify-center gap-2 bg-blue-900 text-zinc-100 rounded-md p-1 cursor-pointer"
+                onClick={saveNote}
+              >
+                <Save size={20} />
+                Salvar
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              className="w-full flex items-center justify-center gap-2 bg-lime-700 text-zinc-100 rounded-md p-1 cursor-pointer"
-              onClick={toggleWatched}
+              className="w-full flex items-center justify-center gap-2 border border-zinc-900 rounded-md p-1 cursor-pointer font-semibold hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
+              onClick={toggleEditNote}
             >
-              {isWatched ? <EyeOff size={20} /> : <Eye size={20} />}
-              Watched
+              <NotebookPen size={18} />
+              Edit Note
             </button>
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-zinc-100 rounded-md p-1 cursor-pointer"
-              onClick={toggleFavorited}
-            >
-              <Star
-                size={20}
-                color="yellow"
-                fill={isFavorite ? "yellow" : "transparent"}
-              />
-              Favorite
-            </button>
-          </div>
-          <button
-            type="button"
-            className="w-full flex items-center justify-center gap-2 border border-zinc-900 rounded-md p-1 cursor-pointer font-semibold hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
-          >
-            <NotebookPen size={18} />
-            Edit Notes
-          </button>
+          )}
         </div>
       </div>
     </li>
